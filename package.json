@@ -1,0 +1,29 @@
+{
+  "name": "nodejs",
+  "version": "1.0.0",
+  "description": "'hello Thuan'",
+  "main": "index.js",
+  "scripts": {
+    "start":"nodemon --inspect index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thuanminh304/learn-nodejs.git"
+  },
+  "keywords": [
+    "learnnodejs"
+  ],
+  "author": "thuanminh",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thuanminh304/learn-nodejs/issues"
+  },
+  "homepage": "https://github.com/thuanminh304/learn-nodejs#readme",
+  "dependencies": {
+    "express": "^4.17.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.13"
+  }
+}
