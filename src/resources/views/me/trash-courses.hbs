@@ -1,0 +1,212 @@
+<form name="container-form" method="POST"  action='/courses/handle-form-trash-course' class="mt-4">
+  <div>
+  <h3>Khóa học đã xóa</h3>
+
+  <a href="/me/stored/courses">Danh sách khóa học</a>
+  </div>
+  <div class=" mt-4 d-flex align-items-baseline ">
+
+            <div class="form-check">
+              <input type="checkbox" class="form-check-input" name="" id="checkbox-all" value="checkedValue" >
+            <label class="form-check-label" for="checkbox-all">
+              
+              Chọn tất cả
+            </label>
+            </div> 
+
+            <div class="form-group mx-2">
+              <select class="form-control  form-control-sm" name="action" id="getValueSelect" required>
+                <option value="">---Hành động---</option>
+                <option value="restore">Khôi phục</option>
+                <option value="deleteForever">Xóa vĩnh viễn</option>
+              </select>
+            </div>
+
+            <button disabled class="btn btn-primary btn-sm btn-submit-checkbox"
+            {{!-- data-toggle="modal"
+              data-target="#delete-course" --}}
+              >
+              Thực hiện
+            </button>
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>STT</th>
+        <th>Name</th>
+        <th>Level</th>
+        <th>Thời gian xóa</th>
+        <th>Tùy chọn</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{#each courses}}
+        <tr>
+          <td> 
+            <div class="form-check">
+              <input 
+              type="checkbox" class="form-check-input" 
+              name="coursesId[]"  
+              value="{{this._id}}" >
+              
+            </div> 
+          </td>
+          <td scope="row">{{sum @index 1}}</td>
+          <td>{{this.name}}</td>
+          <td>{{this.level}}</td>
+          <td>{{this.deletedAt}}</td>
+          <td>
+            <a href="" class="btn btn-link btn-restore-course" data-id="{{this._id}}">Khôi phục</a>
+            <br>
+            <a
+              type="button"
+              class="btn btn-link"
+              data-toggle="modal"
+              data-target="#delete-course"
+              href=""
+              data-id="{{this._id}}"
+            >Xóa vĩnh viễn</a>
+          </td>
+        </tr>
+
+        {{else}}
+        <tr class="text-center">
+          <td colspan="5">Thùng rác trống 
+          <a href="/me/stored/courses">Trở về</a>
+
+          </td>
+        </tr>
+      {{/each}}
+    </tbody>
+  </table>
+</form>
+
+{{! modal confirm delete course }}
+<!-- Modal -->
+<div
+  class="modal fade"
+  id="delete-course"
+  tabindex="-1"
+  role="dialog"
+  aria-labelledby="modelTitleId"
+  aria-hidden="true"
+>
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Xác nhận xóa khóa học .</h5>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Bạn có chắc chắn muốn xóa vĩnh viễn khóa học này ?
+      </div>
+      <div class="modal-footer">
+        <button
+          type="button"
+          class="btn btn-secondary"
+          data-dismiss="modal"
+        >Hủy</button>
+        <button
+          type="button"
+          id="btn-delete-course"
+          class="btn btn-danger"
+        >Xóa vĩnh viễn</button>
+      </div>
+    </div>
+  </div>
+</div>
+{{!-- form ẩn --}}
+
+<form name="hiddenFormDelete" method="POST">
+</form>
+<form name="hiddenFormRestore" method="POST">
+</form>
+ 
+
+<script>
+  document.addEventListener('DOMContentLoaded',function(){
+    let courseId=null;
+    var containerForm=$('form[name="container-form"]')
+   // var containerForm=document.forms['container-form']
+
+var hiddenFormDelete=document.forms['hiddenFormDelete']
+var hiddenFormRestore=document.forms['hiddenFormRestore']
+  var btnDeleteCourse=document.getElementById('btn-delete-course');
+var btnRestoreCourse=$('.btn-restore-course')
+var checkboxAll=$('#checkbox-all')
+    var checkboxCourseItem=$('input[name="coursesId[]"]')
+    var btnSubmitCheckbox=$('.btn-submit-checkbox')
+var getValueSelect=document.getElementById('getValueSelect')
+
+    //lấy id 
+    $('#delete-course').on('show.bs.modal',function(event){ 
+  var button=$(event.relatedTarget);
+   courseId=button.data('id') 
+      }) 
+
+ 
+
+  //khi nhấn click xóa
+  btnDeleteCourse.onclick=function(){
+    hiddenFormDelete.action='/courses/force/'+courseId+'?_method=DELETE'
+    hiddenFormDelete.submit()
+  }
+//khi nhấn khôi phục
+  btnRestoreCourse.click(function(e){
+    e.preventDefault()
+    var courseId =$(this).data('id')
+    hiddenFormRestore.action='/courses/restored/'+courseId+'?_method=PATCH'
+    hiddenFormRestore.submit()
+  })
+
+
+
+
+  //checkbox all changed
+    checkboxAll.change(function(){
+      var   isCheckedAll=  ($(this).prop('checked'))
+      checkboxCourseItem.prop('checked',isCheckedAll)
+
+          {{!-- tương đương hàm if else --}}
+          {{!-- if(isCheckedAll){
+          checkboxCourseItem.prop('checked',true)
+          }else{
+          checkboxCourseItem.prop('checked',false)
+          } --}}
+      renderCheckAllSubmitBtn()
+    })
+
+    //course item checkbox changed
+    checkboxCourseItem.change(function(){
+      var isCheckedAllCourseItem= checkboxCourseItem.length===$('input[name="coursesId[]"]:checked').length
+      //checkboxall sẽ phụ thuộc vào isCheckedAllCourseItem,nếu isCheckedAllCourseItem false thì checkboxall sẽ false
+      checkboxAll.prop("checked",isCheckedAllCourseItem)
+
+      renderCheckAllSubmitBtn()
+    })
+
+    //
+
+    //re-render check all submit button
+    function renderCheckAllSubmitBtn(){
+      var checkedCount=$('input[name="coursesId[]"]:checked').length
+      if(checkedCount>0){
+        btnSubmitCheckbox.attr('disabled',false)
+      }else{
+        btnSubmitCheckbox.attr('disabled',true)
+
+      }
+    }
+
+}); 
+
+
+</script>
